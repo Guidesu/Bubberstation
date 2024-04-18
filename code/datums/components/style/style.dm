@@ -107,7 +107,7 @@
 	RegisterSignal(parent, COMSIG_MOB_EMOTED("flip"), PROC_REF(on_flip))
 	RegisterSignal(parent, COMSIG_MOB_EMOTED("spin"), PROC_REF(on_spin))
 	RegisterSignal(parent, COMSIG_MOB_ITEM_ATTACK, PROC_REF(on_attack))
-	RegisterSignal(parent, COMSIG_HUMAN_MELEE_UNARMED_ATTACK, PROC_REF(on_punch))
+	RegisterSignal(parent, COMSIG_LIVING_UNARMED_ATTACK, PROC_REF(on_punch))
 	RegisterSignal(SSdcs, COMSIG_GLOB_MOB_DEATH, PROC_REF(on_death))
 	RegisterSignal(parent, COMSIG_LIVING_RESONATOR_BURST, PROC_REF(on_resonator_burst))
 	RegisterSignal(parent, COMSIG_LIVING_PROJECTILE_PARRIED, PROC_REF(on_projectile_parry))
@@ -134,7 +134,7 @@
 	UnregisterSignal(parent, COMSIG_MOB_MINED)
 	UnregisterSignal(parent, COMSIG_MOB_APPLY_DAMAGE)
 	UnregisterSignal(parent, list(COMSIG_MOB_EMOTED("flip"), COMSIG_MOB_EMOTED("spin")))
-	UnregisterSignal(parent, list(COMSIG_MOB_ITEM_ATTACK, COMSIG_HUMAN_MELEE_UNARMED_ATTACK))
+	UnregisterSignal(parent, list(COMSIG_MOB_ITEM_ATTACK, COMSIG_LIVING_UNARMED_ATTACK))
 	UnregisterSignal(SSdcs, COMSIG_GLOB_MOB_DEATH)
 	UnregisterSignal(parent, COMSIG_LIVING_RESONATOR_BURST)
 	UnregisterSignal(parent, COMSIG_LIVING_PROJECTILE_PARRIED)
@@ -146,7 +146,7 @@
 		qdel(projectile_parry.resolve())
 
 
-/datum/component/style/Destroy(force, silent)
+/datum/component/style/Destroy(force)
 	STOP_PROCESSING(SSdcs, src)
 	var/mob/mob_parent = parent
 	if(mob_parent.hud_used)
@@ -424,13 +424,23 @@
 
 	add_action(ACTION_GIBTONITE_DEFUSED, min(40, 20 * (10 - det_time))) // 40 to 180 points depending on speed
 
+//BUBBER EDIT START
+/*
 /datum/component/style/proc/on_crusher_detonate(datum/source, mob/living/target, obj/item/kinetic_crusher/crusher, backstabbed)
+*/
+/datum/component/style/proc/on_crusher_detonate(datum/component/kinetic_crusher/source, mob/living/target, obj/item/kinetic_crusher/crusher, backstabbed)
+//BUBBER EDIT END
 	SIGNAL_HANDLER
 
 	if(target.stat == DEAD)
 		return
 
+	//BUBBER EDIT START
+	/*
 	var/has_brimdemon_trophy = locate(/obj/item/crusher_trophy/brimdemon_fang) in crusher.trophies
+	*/
+	var/has_brimdemon_trophy = locate(/obj/item/crusher_trophy/brimdemon_fang) in source.stored_trophies
+	//BUBBER EDIT END
 
 	add_action(ACTION_MARK_DETONATED, round((backstabbed ? 60 : 30) * (ismegafauna(target) ? 1.5 : 1) * (has_brimdemon_trophy ? 1.25 : 1)))
 
@@ -456,7 +466,7 @@
 
 
 // Negative effects
-/datum/component/style/proc/on_take_damage()
+/datum/component/style/proc/on_take_damage(...)
 	SIGNAL_HANDLER
 
 	point_multiplier = round(max(point_multiplier - 0.3, 1), 0.1)

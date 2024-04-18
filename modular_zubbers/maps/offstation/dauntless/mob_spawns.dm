@@ -12,11 +12,11 @@
 	icon_state = "sleeper_s"
 	prompt_name = "Dauntless Personnel"
 	you_are_text = "You are a syndicate Operative, employed on a top secret spy vessel hidden on lavaland"
-	flavour_text = "Unfortinately, your hated enemy, NanoTrasen, has started mining in this sector. Continue working the best you can, and keep a low profile"
+	flavour_text = "Unfortunately, your hated enemy, NanoTrasen, has started mining in this sector. Continue working the best you can, and keep a low profile"
 	quirks_enabled = TRUE
 	random_appearance = FALSE
 	loadout_enabled = TRUE
-	computer_area = /area/ruin/space/has_grav/bubbers/dauntless/service/dorms
+	computer_area = /area/ruin/space/has_grav/bubbers/dauntless/service
 	spawner_job_path = /datum/job/dauntless
 
 /obj/effect/mob_spawn/ghost_role/human/dauntless/syndicate
@@ -40,7 +40,7 @@
 	prompt_name = "a Syndicate hostage"
 	you_are_text = "You are a hostage onboard an unknown syndicate vessel"
 	flavour_text = "Unaware of where you are, all you know is you are a prisoner. The plastitanium should clue you into who your captors are... as for why you're here? That's for you to know, and for us to find out."
-	important_text = "You are not an antagonist. You are still bound to the Roleplay Rule 4. Dauntless personnel can throw you into lava if you antagonize them"
+	important_text = "You are not an antagonist. You are still bound to the Roleplay Rules regarding escalation. Dauntless personnel can throw you into lava if you antagonize them."
 	outfit = /datum/outfit/dauntless/prisoner
 	computer_area = /area/ruin/space/has_grav/bubbers/dauntless/sec/prison
 

@@ -14,7 +14,6 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 	flags_1 |= INITIALIZED_1
 	// Initial is non standard here, but ghosts move before they get here so it's needed. this is a cold path too so it's ok
 	SET_PLANE_IMPLICIT(src, initial(plane))
-	tag = "mob_[next_mob_id++]"
 	add_to_mob_list()
 
 	prepare_huds()
@@ -42,8 +41,9 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 		. += "Time To Start: SOON"
 
 	. += "Players: [LAZYLEN(GLOB.clients)]"
+	. += "Players Ready: [SSticker.totalPlayersReady]" //Bubberstation edit
 	if(client.holder)
-		. += "Players Ready: [SSticker.totalPlayersReady]"
+		// . += "Players Ready: [SSticker.totalPlayersReady]" Bubberstation edit
 		. += "Admins Ready: [SSticker.total_admins_ready] / [length(GLOB.admins)]"
 
 #define SERVER_HOPPER_TRAIT "server_hopper"

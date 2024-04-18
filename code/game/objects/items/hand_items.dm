@@ -219,9 +219,9 @@
 /obj/item/hand_item/slapper/attack(mob/living/slapped, mob/living/carbon/human/user)
 	SEND_SIGNAL(user, COMSIG_LIVING_SLAP_MOB, slapped)
 
-	if(ishuman(slapped))
-		var/mob/living/carbon/human/human_slapped = slapped
-		SEND_SIGNAL(human_slapped, COMSIG_ORGAN_WAG_TAIL, FALSE)
+	if(iscarbon(slapped))
+		var/mob/living/carbon/potential_tailed = slapped
+		potential_tailed.unwag_tail()
 	user.do_attack_animation(slapped)
 
 	var/slap_volume = 50
@@ -266,6 +266,12 @@
 					span_notice("You slap [slapped] in the face!"),
 					span_hear("You hear a slap."),
 				)
+	else if(user.zone_selected == BODY_ZONE_L_ARM || user.zone_selected == BODY_ZONE_R_ARM)
+		user.visible_message(
+			span_danger("[user] gives [slapped] a slap on the wrist!"),
+			span_notice("You give [slapped] a slap on the wrist!"),
+			span_hear("You hear a slap."),
+		)
 	else
 		user.visible_message(
 			span_danger("[user] slaps [slapped]!"),
@@ -297,6 +303,20 @@
 
 	table_smacks_left--
 	if(table_smacks_left <= 0)
+		//BUBBER ADDITION BEGIN - Potentially break glass tables - This introduces a potential check to break a glass table
+		if(table.type == /obj/structure/table/glass) /// Glass table... roll that dice, dice man
+			if(prob(!HAS_TRAIT(user, TRAIT_CURSED) ? 15 : 30)) /// 15% chance (or double for cursed folk)
+				var/obj/item/bodypart/arm/active_arm = user.get_active_hand()
+				var/extra_wound = 0
+				if(HAS_TRAIT(user, TRAIT_HULK))
+					extra_wound = 20
+				user.visible_message(span_danger("[user.name] slams their hand through \the [table]!"),
+					span_userdanger("You smash your hand through \the [table]!"), span_hear("You hear a loud crash of broken glass!"), COMBAT_MESSAGE_RANGE, user)
+				active_arm?.receive_damage(brute = 10, wound_bonus = extra_wound)
+				user.apply_damage(30, STAMINA)
+				table.deconstruct(FALSE)
+				log_combat(user, user, "hand slammed", null, "through [table]")
+		//BUBBER ADDITION END
 		qdel(src)
 
 /// Slam the table, demand some attention
@@ -654,7 +674,7 @@
 		to_chat(firer, span_warning("You've already blessed [target.name] with your heart and soul."))
 		return
 
-	var/amount_nutriment = target.reagents.get_multiple_reagent_amounts(typesof(/datum/reagent/consumable/nutriment))
+	var/amount_nutriment = target.reagents.get_reagent_amount(/datum/reagent/consumable/nutriment, type_check = REAGENT_PARENT_TYPE)
 	if(amount_nutriment <= 0)
 		to_chat(firer, span_warning("There's not enough nutrition in [target.name] for it to be a proper meal."))
 		return

@@ -98,7 +98,6 @@ GLOBAL_VAR_INIT(cops_arrived, FALSE)
 	REGISTER_REQUIRED_MAP_ITEM(1, INFINITY)
 
 	GLOB.shuttle_caller_list += src
-	AddComponent(/datum/component/gps, "Secured Communications Signal")
 
 /// Are we NOT a silicon, AND we're logged in as the captain?
 /obj/machinery/computer/communications/proc/authenticated_as_non_silicon_captain(mob/user)
@@ -411,6 +410,8 @@ GLOBAL_VAR_INIT(cops_arrived, FALSE)
 							post_status("alert", "orangealert")
 						if(SEC_LEVEL_AMBER)
 							post_status("alert", "amberalert")
+						if(SEC_LEVEL_EPSILON)
+							post_status("alert", "epsilonalert")
 						if(SEC_LEVEL_GAMMA)
 							post_status("alert", "gammaalert")
 						// SKYRAT EDIT ADD END - Alert Levels
@@ -443,6 +444,8 @@ GLOBAL_VAR_INIT(cops_arrived, FALSE)
 
 			state = STATE_MAIN
 			playsound(src, 'sound/machines/terminal_on.ogg', 50, FALSE)
+			imprint_gps(gps_tag = "Encrypted Communications Channel")
+			
 		if ("toggleEmergencyAccess")
 			if(emergency_access_cooldown(usr)) //if were in cooldown, dont allow the following code
 				return
@@ -931,7 +934,6 @@ GLOBAL_VAR_INIT(cops_arrived, FALSE)
 	hacker.log_message("hacked a communications console, resulting in: [picked_option].", LOG_GAME, log_globally = TRUE)
 	switch(picked_option)
 		if(HACK_PIRATE) // Triggers pirates, which the crew may be able to pay off to prevent
-			var/datum/game_mode/dynamic/dynamic = SSticker.mode
 			var/list/pirate_rulesets = list(
 				/datum/dynamic_ruleset/midround/pirates,
 				/datum/dynamic_ruleset/midround/dangerous_pirates,
@@ -940,7 +942,7 @@ GLOBAL_VAR_INIT(cops_arrived, FALSE)
 				"Attention crew: sector monitoring reports a massive jump-trace from an enemy vessel destined for your system. Prepare for imminent hostile contact.",
 				"[command_name()] High-Priority Update",
 			)
-			dynamic.picking_specific_rule(pick(pirate_rulesets), forced = TRUE, ignore_cost = TRUE)
+			SSdynamic.picking_specific_rule(pick(pirate_rulesets), forced = TRUE, ignore_cost = TRUE)
 
 		if(HACK_FUGITIVES) // Triggers fugitives, which can cause confusion / chaos as the crew decides which side help
 			priority_announce(
@@ -961,22 +963,20 @@ GLOBAL_VAR_INIT(cops_arrived, FALSE)
 					continue
 				shake_camera(crew_member, 15, 1)
 
-			var/datum/game_mode/dynamic/dynamic = SSticker.mode
-			dynamic.unfavorable_situation()
+			SSdynamic.unfavorable_situation()
 
 		if(HACK_SLEEPER) // Trigger one or multiple sleeper agents with the crew (or for latejoining crew)
 			var/datum/dynamic_ruleset/midround/sleeper_agent_type = /datum/dynamic_ruleset/midround/from_living/autotraitor
-			var/datum/game_mode/dynamic/dynamic = SSticker.mode
 			var/max_number_of_sleepers = clamp(round(length(GLOB.alive_player_list) / 20), 1, 3)
 			var/num_agents_created = 0
 			for(var/num_agents in 1 to rand(1, max_number_of_sleepers))
-				if(!dynamic.picking_specific_rule(sleeper_agent_type, forced = TRUE, ignore_cost = TRUE))
+				if(!SSdynamic.picking_specific_rule(sleeper_agent_type, forced = TRUE, ignore_cost = TRUE))
 					break
 				num_agents_created++
 
 			if(num_agents_created <= 0)
 				// We failed to run any midround sleeper agents, so let's be patient and run latejoin traitor
-				dynamic.picking_specific_rule(/datum/dynamic_ruleset/latejoin/infiltrator, forced = TRUE, ignore_cost = TRUE)
+				SSdynamic.picking_specific_rule(/datum/dynamic_ruleset/latejoin/infiltrator, forced = TRUE, ignore_cost = TRUE)
 
 			else
 				// We spawned some sleeper agents, nice - give them a report to kickstart the paranoia

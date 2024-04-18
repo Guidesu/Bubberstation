@@ -1,4 +1,6 @@
 /*********************Mining Hammer****************/
+//BUBBER EDIT START - OVERRIDEN IN MODULAR
+/*
 /obj/item/kinetic_crusher
 	icon = 'icons/obj/mining.dmi'
 	icon_state = "crusher"
@@ -21,7 +23,7 @@
 	sharpness = SHARP_EDGED
 	actions_types = list(/datum/action/item_action/toggle_light)
 	obj_flags = UNIQUE_RENAME
-	light_system = MOVABLE_LIGHT
+	light_system = OVERLAY_LIGHT
 	light_range = 5
 	light_on = FALSE
 	var/list/trophies = list()
@@ -113,7 +115,7 @@
 			if((user.dir & backstab_dir) && (L.dir & backstab_dir))
 				backstabbed = TRUE
 				combined_damage += backstab_bonus
-				playsound(user, 'sound/weapons/kenetic_accel.ogg', 100, TRUE) //Seriously who spelled it wrong
+				playsound(user, 'sound/weapons/kinetic_accel.ogg', 100, TRUE) //Seriously who spelled it wrong
 
 			if(!QDELETED(C))
 				C.total_damage += combined_damage
@@ -159,7 +161,7 @@
 	if(!charged)
 		charged = TRUE
 		update_appearance()
-		playsound(src.loc, 'sound/weapons/kenetic_reload.ogg', 60, TRUE)
+		playsound(src.loc, 'sound/weapons/kinetic_reload.ogg', 60, TRUE)
 
 /obj/item/kinetic_crusher/ui_action_click(mob/user, actiontype)
 	set_light_on(!light_on)
@@ -201,7 +203,7 @@
 	hammer_synced = null
 	return ..()
 
-/obj/projectile/destabilizer/on_hit(atom/target, blocked = FALSE)
+/obj/projectile/destabilizer/on_hit(atom/target, blocked = 0, pierce_hit)
 	if(isliving(target))
 		var/mob/living/L = target
 		var/had_effect = (L.has_status_effect(/datum/status_effect/crusher_mark)) //used as a boolean
@@ -216,6 +218,8 @@
 		new /obj/effect/temp_visual/kinetic_blast(M)
 		M.gets_drilled(firer)
 	..()
+*/
+//BUBBER EDIT END
 
 //trophies
 /obj/item/crusher_trophy
@@ -233,6 +237,8 @@
 /obj/item/crusher_trophy/proc/effect_desc()
 	return "errors"
 
+//BUBBER EDIT START - OVERRIDEN IN MODULAR
+/*
 /obj/item/crusher_trophy/attackby(obj/item/A, mob/living/user)
 	if(istype(A, /obj/item/kinetic_crusher))
 		add_to(A, user)
@@ -253,6 +259,8 @@
 /obj/item/crusher_trophy/proc/remove_from(obj/item/kinetic_crusher/crusher, mob/living/user)
 	forceMove(get_turf(crusher))
 	return TRUE
+*/
+//BUBBER EDIT END
 
 /obj/item/crusher_trophy/proc/on_melee_hit(mob/living/target, mob/living/user) //the target and the user
 /obj/item/crusher_trophy/proc/on_projectile_fire(obj/projectile/destabilizer/marker, mob/living/user) //the projectile fired and the user
@@ -315,6 +323,8 @@
 /obj/item/crusher_trophy/legion_skull/effect_desc()
 	return "a kinetic crusher to recharge <b>[bonus_value*0.1]</b> second\s faster"
 
+//BUBBER EDIT START - MOVED TO MODULAR
+/*
 /obj/item/crusher_trophy/legion_skull/add_to(obj/item/kinetic_crusher/H, mob/living/user)
 	. = ..()
 	if(.)
@@ -324,6 +334,8 @@
 	. = ..()
 	if(.)
 		H.charge_time += bonus_value
+*/
+//BUBBER EDIT END
 
 //blood-drunk hunter
 /obj/item/crusher_trophy/miner_eye
@@ -373,6 +385,8 @@
 /obj/item/crusher_trophy/demon_claws/effect_desc()
 	return "melee hits to do <b>[bonus_value * 0.2]</b> more damage and heal you for <b>[bonus_value * 0.1]</b>, with <b>5X</b> effect on mark detonation"
 
+//BUBBER EDIT START - MOVED TO MODULAR
+/*
 /obj/item/crusher_trophy/demon_claws/add_to(obj/item/kinetic_crusher/H, mob/living/user)
 	. = ..()
 	if(.)
@@ -386,6 +400,8 @@
 		H.force -= bonus_value * 0.2
 		H.detonation_damage -= bonus_value * 0.8
 		AddComponent(/datum/component/two_handed, force_wielded=20)
+*/
+//BUBBER EDIT END
 
 /obj/item/crusher_trophy/demon_claws/on_melee_hit(mob/living/target, mob/living/user)
 	user.heal_ordered_damage(bonus_value * 0.1, damage_heal_order)
@@ -437,3 +453,36 @@
 		chaser.monster_damage_boost = FALSE // Weaker cuz no cooldown
 		chaser.damage = 20
 		log_combat(user, target, "fired a chaser at", src)
+
+/obj/item/crusher_trophy/ice_demon_cube
+	name = "demonic cube"
+	desc = "A stone cold cube dropped from an ice demon."
+	icon_state = "ice_demon_cube"
+	denied_type = /obj/item/crusher_trophy/ice_demon_cube
+	///how many will we summon?
+	var/summon_amount = 2
+	///cooldown to summon demons upon the target
+	COOLDOWN_DECLARE(summon_cooldown)
+
+/obj/item/crusher_trophy/ice_demon_cube/effect_desc()
+	return "mark detonation to unleash demonic ice clones upon the target"
+
+/obj/item/crusher_trophy/ice_demon_cube/on_mark_detonation(mob/living/target, mob/living/user)
+	if(isnull(target) || !COOLDOWN_FINISHED(src, summon_cooldown))
+		return
+	for(var/i in 1 to summon_amount)
+		var/turf/drop_off = find_dropoff_turf(target, user)
+		var/mob/living/basic/mining/demon_afterimage/crusher/friend = new(drop_off)
+		friend.faction = list(FACTION_NEUTRAL)
+		friend.befriend(user)
+		friend.ai_controller?.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, target)
+	COOLDOWN_START(src, summon_cooldown, 30 SECONDS)
+
+///try to make them spawn all around the target to surround him
+/obj/item/crusher_trophy/ice_demon_cube/proc/find_dropoff_turf(mob/living/target, mob/living/user)
+	var/list/turfs_list = get_adjacent_open_turfs(target)
+	for(var/turf/possible_turf in turfs_list)
+		if(possible_turf.is_blocked_turf())
+			continue
+		return possible_turf
+	return get_turf(user)

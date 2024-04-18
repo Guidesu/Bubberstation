@@ -8,7 +8,7 @@
 // Cargo
 
 /area/ruin/space/has_grav/bubbers/dauntless/cargo
-	name = "Dauntless Hangerbay"
+	name = "Dauntless Hangarbay"
 
 // Engineering
 
@@ -77,9 +77,6 @@
 
 /area/ruin/space/has_grav/bubbers/dauntless/med/storage
 	name = "Dauntless Medical Storage"
-
-/area/ruin/space/has_grav/bubbers/dauntless/med/cold
-	name = "Dauntless Cold Storage"
 
 /area/ruin/space/has_grav/bubbers/dauntless/med/chem
 	name = "Dauntless Chemistry Lab"
